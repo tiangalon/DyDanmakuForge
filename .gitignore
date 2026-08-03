@@ -13,7 +13,7 @@ target/
 **/.cache/
 .gradletasknamecache
 
-# Minecraft/Forge development runs
+# Minecraft/NeoForge development runs
 run/
 run-data/
 **/run/

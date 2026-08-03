@@ -1,35 +1,40 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'idea'
     id 'eclipse'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'net.neoforged.moddev' version '2.0.143'
+    id 'com.gradleup.shadow' version '9.4.1'
 }
 
 version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = "DyDanmaku-forge-${minecraft_version}"
+    archivesName = "DyDanmaku-neoforge-${minecraft_version}"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-minecraft {
-    mappings channel: 'official', version: minecraft_version
-    copyIdeResources = true
+neoForge {
+    version = project.neo_version
 
     runs {
-        configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.console.level', 'info'
-            mods {
-                "${mod_id}" { source sourceSets.main }
-            }
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
-        client {}
-        server { args '--nogui' }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
     }
 }
 
@@ -37,20 +42,28 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+configurations {
+    // Keep the shaded runtime libraries separate from ModDevGradle's game classpath.
+    // Otherwise Shadow also copies NeoForge itself into the published mod JAR.
+    shade
+    implementation.extendsFrom shade
+}
 
-    implementation 'com.google.protobuf:protobuf-java:4.27.2'
-    implementation 'com.moandjiezana.toml:toml4j:0.7.2'
-    // Forge coremods provides Nashorn at runtime. Bundling it again creates a split Java module.
+dependencies {
+    shade('com.google.protobuf:protobuf-java:4.27.2') { transitive = false }
+    shade('com.moandjiezana.toml:toml4j:0.7.2') { transitive = false }
+    // NeoForge coremods provides Nashorn at runtime. Bundling it again creates a split Java module.
     compileOnly 'org.openjdk.nashorn:nashorn-core:15.4'
-    implementation 'io.netty:netty-codec-http:4.1.81.Final'
+    shade('io.netty:netty-codec-http:4.1.97.Final') { transitive = false }
 }
 
 tasks.named('processResources', ProcessResources).configure {
     def replaceProperties = [
             minecraft_version: minecraft_version,
-            forge_version: forge_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version: neo_version,
+            neo_version_range: neo_version_range,
+            loader_version_range: loader_version_range,
             mod_id: mod_id,
             mod_name: mod_name,
             mod_license: mod_license,
@@ -59,39 +72,26 @@ tasks.named('processResources', ProcessResources).configure {
             mod_description: mod_description
     ]
     inputs.properties replaceProperties
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
         expand replaceProperties
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release = 17
-}
-
-tasks.named('jar').configure {
-    archiveClassifier.set('slim')
-    finalizedBy 'reobfJar'
+    options.release = 21
 }
 
 tasks.named('shadowJar').configure {
     archiveClassifier.set('')
+    configurations = [project.configurations.shade]
     mergeServiceFiles()
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 
-    dependencies {
-        include dependency('com.google.protobuf:protobuf-java:4.27.2')
-        include dependency('com.moandjiezana.toml:toml4j:0.7.2')
-        include dependency('io.netty:netty-codec-http:4.1.81.Final')
-    }
-
     relocate 'com.google.protobuf', "${mod_group_id}.dydanmakuforge.shadow.protobuf"
     relocate 'com.moandjiezana.toml', "${mod_group_id}.dydanmakuforge.shadow.toml"
-    finalizedBy 'reobfShadowJar'
 }
 
+tasks.named('jar').configure { enabled = false }
 tasks.named('assemble').configure { dependsOn tasks.named('shadowJar') }
-
-reobf {
-    shadowJar {}
-}
+tasks.named('build').configure { dependsOn tasks.named('shadowJar') }

@@ -9,12 +9,12 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.event.RegisterClientCommandsEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.lwjgl.glfw.GLFW;
 import top.tiangalon.dydanmakuforge.config.ConfigManager;
 import top.tiangalon.dydanmakuforge.config.ConfigManager.MessageType;
@@ -56,8 +56,8 @@ public final class DyDanmakuForgeClient {
         ConfigManager.createDefaultConfig(configDir.toString());
 
         modEventBus.addListener(DyDanmakuForgeClient::registerKeyMappings);
-        MinecraftForge.EVENT_BUS.addListener(DyDanmakuForgeClient::onClientTick);
-        MinecraftForge.EVENT_BUS.addListener(DyDanmakuForgeClient::registerClientCommands);
+        NeoForge.EVENT_BUS.addListener(DyDanmakuForgeClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(DyDanmakuForgeClient::registerClientCommands);
         LOGGER.info("[DyDanmaku]配置目录：{}", configDir.toAbsolutePath());
     }
 
@@ -65,8 +65,8 @@ public final class DyDanmakuForgeClient {
         event.register(OPEN_GUI);
     }
 
-    private static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !OPEN_GUI.consumeClick()) {
+    private static void onClientTick(ClientTickEvent.Post event) {
+        if (!OPEN_GUI.consumeClick()) {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();
