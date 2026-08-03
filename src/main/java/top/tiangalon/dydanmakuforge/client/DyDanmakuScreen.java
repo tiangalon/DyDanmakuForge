@@ -27,9 +27,9 @@ import static top.tiangalon.dydanmakuforge.client.DyDanmakuForgeClient.OPEN_GUI;
 
 public final class DyDanmakuScreen extends Screen {
     private static final String EXAMPLE_LIVE_ID = "594357732923";
-    private static final ResourceLocation AVATAR_ID = ResourceLocation.tryParse("dydanmaku:avatar");
+    private static final ResourceLocation AVATAR_ID = ResourceLocation.parse("dydanmaku:avatar");
     private static final ResourceLocation LOADING_ID =
-            ResourceLocation.tryBuild("dydanmaku", "textures/gui/sprite/loading.png");
+            ResourceLocation.fromNamespaceAndPath("dydanmaku", "textures/gui/sprite/loading.png");
     private static volatile Path avatarPath;
 
     private final DyDanmakuController controller;
@@ -84,7 +84,18 @@ public final class DyDanmakuScreen extends Screen {
             MessageType type = messageTypes[index];
             int x = 40 + (index % 3) * 75;
             int y = 112 + (index / 3) * 22;
-            addRenderableWidget(new MessageTypeCheckbox(x, y, type, visibility.isEnabled(type)));
+            Checkbox checkbox = Checkbox.builder(Component.literal(type.getDisplayName()), font)
+                    .pos(x, y)
+                    .selected(visibility.isEnabled(type))
+                    .maxWidth(70)
+                    .onValueChange((changedCheckbox, selected) -> {
+                        if (!ConfigManager.setMessageTypeEnabled(
+                                ClientRuntime.getConfigDir().toString(), type, selected)) {
+                            ClientRuntime.output("[DyDanmaku]消息类型过滤设置保存失败，请查看日志");
+                        }
+                    })
+                    .build();
+            addRenderableWidget(checkbox);
         }
 
         Path pendingAvatar = avatarPath;
@@ -167,12 +178,12 @@ public final class DyDanmakuScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (mouseY >= 150) {
-            scrollOffset = Math.max(0, scrollOffset + (amount > 0 ? 2 : -2));
+            scrollOffset = Math.max(0, scrollOffset + (verticalAmount > 0 ? 2 : -2));
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, amount);
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override
@@ -191,26 +202,6 @@ public final class DyDanmakuScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
-    }
-
-    private final class MessageTypeCheckbox extends Checkbox {
-        private final MessageType type;
-
-        private MessageTypeCheckbox(int x, int y, MessageType type, boolean selected) {
-            super(x, y, 70, 20, Component.literal(type.getDisplayName()), selected);
-            this.type = type;
-        }
-
-        @Override
-        public void onPress() {
-            super.onPress();
-            boolean saved = ConfigManager.setMessageTypeEnabled(
-                    ClientRuntime.getConfigDir().toString(), type, selected());
-            if (!saved) {
-                super.onPress();
-                ClientRuntime.output("[DyDanmaku]消息类型过滤设置保存失败，请查看日志");
-            }
-        }
     }
 
     @Override

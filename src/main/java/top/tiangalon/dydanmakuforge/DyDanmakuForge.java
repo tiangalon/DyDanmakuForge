@@ -11,8 +11,8 @@ public final class DyDanmakuForge {
     public static final String MOD_ID = "dydanmakuforge";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public DyDanmakuForge() {
+    public DyDanmakuForge(FMLJavaModLoadingContext context) {
         LOGGER.info("[DyDanmaku]正在加载 Forge 客户端模组");
-        DyDanmakuForgeClient.register(FMLJavaModLoadingContext.get().getModEventBus());
+        DyDanmakuForgeClient.register(context.getModEventBus());
     }
 }

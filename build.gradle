@@ -2,8 +2,8 @@ plugins {
     id 'java'
     id 'idea'
     id 'eclipse'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'net.minecraftforge.gradle' version '[7.0.3,8)'
+    id 'com.gradleup.shadow' version '9.4.1'
 }
 
 version = mod_version
@@ -13,38 +13,37 @@ base {
     archivesName = "DyDanmaku-forge-${minecraft_version}"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 minecraft {
     mappings channel: 'official', version: minecraft_version
-    copyIdeResources = true
 
     runs {
         configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.console.level', 'info'
-            mods {
-                "${mod_id}" { source sourceSets.main }
-            }
+            workingDir = layout.projectDirectory.dir('run')
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
         }
 
-        client {}
-        server { args '--nogui' }
+        register('client')
+        register('server') { args '--nogui' }
     }
 }
 
 repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
     mavenCentral()
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
 
     implementation 'com.google.protobuf:protobuf-java:4.27.2'
     implementation 'com.moandjiezana.toml:toml4j:0.7.2'
     // Forge coremods provides Nashorn at runtime. Bundling it again creates a split Java module.
     compileOnly 'org.openjdk.nashorn:nashorn-core:15.4'
-    implementation 'io.netty:netty-codec-http:4.1.81.Final'
+    implementation 'io.netty:netty-codec-http:4.1.97.Final'
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -66,12 +65,7 @@ tasks.named('processResources', ProcessResources).configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release = 17
-}
-
-tasks.named('jar').configure {
-    archiveClassifier.set('slim')
-    finalizedBy 'reobfJar'
+    options.release = 21
 }
 
 tasks.named('shadowJar').configure {
@@ -82,16 +76,13 @@ tasks.named('shadowJar').configure {
     dependencies {
         include dependency('com.google.protobuf:protobuf-java:4.27.2')
         include dependency('com.moandjiezana.toml:toml4j:0.7.2')
-        include dependency('io.netty:netty-codec-http:4.1.81.Final')
+        include dependency('io.netty:netty-codec-http:4.1.97.Final')
     }
 
     relocate 'com.google.protobuf', "${mod_group_id}.dydanmakuforge.shadow.protobuf"
     relocate 'com.moandjiezana.toml', "${mod_group_id}.dydanmakuforge.shadow.toml"
-    finalizedBy 'reobfShadowJar'
 }
 
+tasks.named('jar').configure { enabled = false }
 tasks.named('assemble').configure { dependsOn tasks.named('shadowJar') }
-
-reobf {
-    shadowJar {}
-}
+tasks.named('build').configure { dependsOn tasks.named('shadowJar') }

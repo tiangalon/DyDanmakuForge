@@ -1,16 +1,16 @@
-# DyDanmaku Forge 1.20.1
+# DyDanmaku Forge 1.21.1
 
-在 Minecraft 客户端聊天框中显示抖音直播间消息。本分支面向 Minecraft 1.20.1，并与 DyDanmaku Fabric `0.1.7` 的功能保持一致。
+在 Minecraft 客户端聊天框中显示抖音直播间消息。本分支面向 Minecraft 1.21.1，并与 DyDanmaku Fabric `0.1.7` 的功能保持一致。
 
 ## 环境
 
-- Minecraft 1.20.1
-- Forge 47.2.32 或更高版本
-- Java 17
+- Minecraft 1.21.1
+- Forge 52.1.16
+- Java 21
 
 ## 使用
 
-将 `DyDanmaku-forge-1.20.1-0.1.7.2.jar` 放入客户端的 `mods` 目录。进入游戏后按 `F7` 打开控制界面，可输入抖音直播间 URL 或房间号并连接；输入框默认填入示例房间号 `594357732923`，可直接替换。
+将 `DyDanmaku-forge-1.21.1-0.1.7.2.jar` 放入客户端的 `mods` 目录。进入游戏后按 `F7` 打开控制界面，可输入抖音直播间 URL 或房间号并连接；输入框默认填入示例房间号 `594357732923`，可直接替换。
 
 输入可以是 URL 或者房间号。示例 URL：`https://live.douyin.com/594357732923`；示例房间号：`594357732923`。
 
@@ -38,7 +38,7 @@
 
 ## 构建
 
-PowerShell 构建脚本启动后会询问自定义 Java 路径，直接回车即可自动选择。Java 的选择优先级为：自定义路径 → `JAVA_17_HOME` → `JAVA_HOME` → `Path` 中的 `java`。仅在脚本进程内临时切换 `JAVA_HOME` 和 `Path`，结束后会恢复原值：
+PowerShell 构建脚本启动后会询问自定义 Java 路径，直接回车即可自动选择。Java 的选择优先级为：自定义路径 → `JAVA_21_HOME` → `JAVA_HOME` → `Path` 中的 `java`。仅在脚本进程内临时切换 `JAVA_HOME` 和 `Path`，结束后会恢复原值：
 
 ```powershell
 .\build.ps1
@@ -47,16 +47,14 @@ PowerShell 构建脚本启动后会询问自定义 Java 路径，直接回车即
 .\build.ps1 -Clean
 
 # 也可以直接通过参数指定，不再交互询问
-.\build.ps1 -Clean -JavaHome 'C:\path\to\jdk-17'
+.\build.ps1 -Clean -JavaHome 'C:\path\to\jdk-21'
 ```
 
-环境变量的读取优先级为当前进程、用户环境变量、系统环境变量。脚本会校验所选 Java 是否为 Java 17。构建产物位于：
+环境变量的读取优先级为当前进程、用户环境变量、系统环境变量。脚本会校验所选 Java 是否为 Java 21。构建产物位于：
 
 ```text
-build/libs/DyDanmaku-forge-1.20.1-0.1.7.2.jar
+build/libs/DyDanmaku-forge-1.21.1-0.1.7.2.jar
 ```
-
-构建过程中还会生成带 `-slim.jar` 后缀的中间包。该文件不含第三方依赖，不要作为游戏安装包使用。所有 JAR 均已由 `.gitignore` 排除。
 
 ## 说明
 

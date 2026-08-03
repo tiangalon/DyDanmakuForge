@@ -75,9 +75,9 @@ if (-not [string]::IsNullOrWhiteSpace($JavaHome)) {
     $selectedPath = $JavaHome
     $javaSource = 'custom input'
 } else {
-    $selectedPath = Get-ScopedEnvironmentVariable 'JAVA_17_HOME'
+    $selectedPath = Get-ScopedEnvironmentVariable 'JAVA_21_HOME'
     if (-not [string]::IsNullOrWhiteSpace($selectedPath)) {
-        $javaSource = 'JAVA_17_HOME'
+        $javaSource = 'JAVA_21_HOME'
     } else {
         $selectedPath = Get-ScopedEnvironmentVariable 'JAVA_HOME'
         if (-not [string]::IsNullOrWhiteSpace($selectedPath)) {
@@ -94,7 +94,7 @@ if (-not [string]::IsNullOrWhiteSpace($JavaHome)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($selectedPath)) {
-    throw 'No Java installation was found. Enter a custom path or configure JAVA_17_HOME, JAVA_HOME, or PATH.'
+    throw 'No Java installation was found. Enter a custom path or configure JAVA_21_HOME, JAVA_HOME, or PATH.'
 }
 
 $java = Resolve-JavaInstallation $selectedPath
@@ -102,8 +102,8 @@ $javaVersion = (& $java.Exe -version 2>&1 | Select-Object -First 1).ToString()
 if ($javaVersion -notmatch 'version "([0-9]+)') {
     throw "Unable to determine the Java version from: $javaVersion"
 }
-if ([int]$Matches[1] -ne 17) {
-    throw "Forge 1.20.1 requires Java 17, but the selected runtime reports: $javaVersion"
+if ([int]$Matches[1] -ne 21) {
+    throw "Forge 1.21.1 requires Java 21, but the selected runtime reports: $javaVersion"
 }
 
 $previousJavaHome = $env:JAVA_HOME
@@ -121,7 +121,7 @@ try {
         & "$PSScriptRoot\gradlew.bat" build --no-daemon --console=plain
     }
     if ($LASTEXITCODE -ne 0) {
-        throw "Forge 1.20.1 build failed with exit code $LASTEXITCODE."
+        throw "Forge 1.21.1 build failed with exit code $LASTEXITCODE."
     }
 } finally {
     $env:JAVA_HOME = $previousJavaHome

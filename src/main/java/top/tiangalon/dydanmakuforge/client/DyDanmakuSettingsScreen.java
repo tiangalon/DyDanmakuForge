@@ -224,7 +224,7 @@ public final class DyDanmakuSettingsScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double verticalAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (mouseY >= 160 && mouseY <= 164 + visibleKeywordRows * 22
                 && keywords.size() > visibleKeywordRows) {
             int maxScroll = keywords.size() - visibleKeywordRows;
@@ -233,7 +233,7 @@ public final class DyDanmakuSettingsScreen extends Screen {
             refreshKeywordButtons();
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, verticalAmount);
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override
